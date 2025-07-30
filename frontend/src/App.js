@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard'; // tu página protegida
+import ProductDetailPage from './pages/ProductDetailPage';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route
           path="/dashboard"
           element={
