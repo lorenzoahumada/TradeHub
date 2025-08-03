@@ -2,13 +2,20 @@ const pool = require('../db');
 
 const getProducts = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM products');
+    const [rows] = await pool.query(`
+      SELECT products.*, users.name AS owner_name
+      FROM products
+      JOIN users ON products.owner_id = users.id
+      ORDER BY products.id DESC
+    `);
+
     res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al obtener productos' });
   }
 };
+
 
 const getProductById = async (req, res) => {
   try {

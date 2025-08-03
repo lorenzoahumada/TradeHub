@@ -19,7 +19,14 @@ function Dashboard() {
       }
     })
     .then(res => setProductos(res.data))
-    .catch(err => console.error('Error al cargar productos del usuario', err));
+    .catch(err => { 
+      console.error('Error al cargar productos del usuario', err);
+
+      if (err.response && err.response.status === 403) {
+        localStorage.removeItem('token');
+        window.location.href = '/login'; // o redirigir a login
+      }
+    });
   }, []);
 
   const handleChange = (e) => {
