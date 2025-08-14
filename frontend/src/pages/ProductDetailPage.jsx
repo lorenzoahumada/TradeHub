@@ -17,6 +17,7 @@ function ProductDetailPage() {
   return (
     <div className="container bg-light text-dark mt-5">
       <h1>{product.name}</h1>
+      <h5>Marca: {product.brand}</h5>
       <div 
         className="mb-3 d-flex justify-content-center align-items-center border border-dark" 
         style={{ width: '350px', height: '400px', overflow: 'hidden' }}>
@@ -26,7 +27,8 @@ function ProductDetailPage() {
           style={{ maxHeight: '100%', objectFit: 'contain' }}
         />
       </div>
-      <h3>$ {product.price}</h3>
+      <h3 className='mb-4'>$ {product.price}</h3>
+      <h3>Descripcion</h3>
       <p>{product.description}</p>
     </div>
   );

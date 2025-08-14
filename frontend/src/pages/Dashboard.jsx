@@ -3,13 +3,17 @@ import axios from 'axios';
 
 function Dashboard() {
   const [productos, setProductos] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   const [nuevoProducto, setNuevoProducto] = useState({
     name: '',
     description: '',
     price: '',
-    images: ''
+    images: '',
+    categories: [],
+    newCategories: [],
+    brand: ''
   });
 
   useEffect(() => {
@@ -24,15 +28,37 @@ function Dashboard() {
 
       if (err.response && err.response.status === 403) {
         localStorage.removeItem('token');
-        window.location.href = '/login'; // o redirigir a login
+        window.location.href = '/login';
       }
     });
+  }, []);
+
+  useEffect(() => {
+    axios.get('/api/categories')
+      .then(res => setCategories(res.data))
+      .catch(err => console.error('Error al cargar categorías', err));
   }, []);
 
   const handleChange = (e) => {
     setNuevoProducto({
       ...nuevoProducto,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleCategoryToggle = (catId) => {
+    setNuevoProducto(prev => ({
+      ...prev,
+      categories: prev.categories.includes(catId)
+        ? prev.categories.filter(id => id !== catId)
+        : [...prev.categories, catId]
+    }));
+  };
+
+  const handleNewCategoryChange = (e) => {
+    setNuevoProducto({
+      ...nuevoProducto,
+      newCategories: e.target.value.split(',').map(c => c.trim()).filter(Boolean)
     });
   };
 
@@ -50,7 +76,7 @@ function Dashboard() {
     .then(res => {
       setProductos([...productos, res.data]);
       setShowModal(false);
-      setNuevoProducto({ name: '', description: '', price: '', images: '' });
+      setNuevoProducto({ name: '', description: '', price: '', images: '', categories: [], newCategories: [], brand: '' });
     })
     .catch(err => console.error('Error al agregar producto', err));
   };
@@ -68,8 +94,6 @@ function Dashboard() {
   })
   .catch(err => console.error('Error al eliminar producto', err));
 };
-
-
 
 
   return (
@@ -112,7 +136,33 @@ function Dashboard() {
                 <input name="name" className="form-control mb-2" placeholder="Nombre" value={nuevoProducto.name} onChange={handleChange} />
                 <input name="price" className="form-control mb-2" placeholder="Precio" type="number" value={nuevoProducto.price} onChange={handleChange} />
                 <textarea name="description" className="form-control mb-2" placeholder="Descripción" value={nuevoProducto.description} onChange={handleChange}></textarea>
+                <input name="brand" className="form-control mb-2" placeholder="Marca" value={nuevoProducto.brand} onChange={handleChange} />
                 <input name="images" className="form-control mb-2" placeholder="URLs de imágenes separadas por coma" value={nuevoProducto.images} onChange={handleChange} />
+                
+                <hr />
+                <h6>Categorías existentes</h6>
+                <div className='overflow-auto' style={{ maxHeight: '145px' }}>
+                {categories.map(cat => (
+                  <div key={cat.id}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={nuevoProducto.categories.includes(cat.id)}
+                        onChange={() => handleCategoryToggle(cat.id)}
+                      /> {cat.name}
+                    </label>
+                  </div>
+                ))}
+                </div>
+
+                <hr />
+                <h6>Nuevas categorías (separadas por coma)</h6>
+                <input
+                  type="text"
+                  className="form-control mb-2"
+                  placeholder="Ej: Tecnología, Gaming"
+                  onChange={handleNewCategoryChange}
+                />
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>

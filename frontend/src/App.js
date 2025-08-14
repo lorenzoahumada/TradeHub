@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard'; // tu página protegida
 import ProductDetailPage from './pages/ProductDetailPage';
 import PrivateRoute from './components/PrivateRoute';
+import SearchResults from './pages/SearchResults';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/search/:query" element={<SearchResults />} />
         <Route
           path="/dashboard"
           element={
