@@ -10,6 +10,7 @@ function Dashboard() {
     name: '',
     description: '',
     price: '',
+    stock: '',
     images: '',
     categories: [],
     newCategories: [],
@@ -82,18 +83,42 @@ function Dashboard() {
   };
 
   const handleEliminar = (id) => {
-  if (!window.confirm('¿Seguro que deseas eliminar este producto?')) return;
+    if (!window.confirm('¿Seguro que deseas eliminar este producto?')) return;
 
-  axios.delete(`/api/products/${id}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  })
-  .then(() => {
-    setProductos(productos.filter(p => p.id !== id));
-  })
-  .catch(err => console.error('Error al eliminar producto', err));
-};
+    axios.delete(`/api/products/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    .then(() => {
+      setProductos(productos.filter(p => p.id !== id));
+    })
+    .catch(err => console.error('Error al eliminar producto', err));
+  };
+
+  const handleIncrease = (productId) => {
+    axios.post(`/api/products/${productId}/increase-stock`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    .then(() => {
+      setProductos(prev => prev.map(p => p.id === productId ? { ...p, stock: p.stock + 1 } : p));
+    })
+    .catch(err => console.error('Error al aumentar stock', err));
+  };
+
+  const handleDecrease = (productId) => {
+    axios.post(`/api/products/${productId}/decrease-stock`, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    .then(() => {
+      setProductos(prev => prev.map(p => p.id === productId ? { ...p, stock: p.stock - 1 } : p));
+    })
+    .catch(err => console.error('Error al decrementar stock', err));
+  };
 
 
   return (
@@ -116,6 +141,22 @@ function Dashboard() {
             <div>
               <strong>{prod.name}</strong> - <span className="text-success">$ {prod.price}</span>
             </div>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => handleDecrease(prod.id)}
+              disabled={prod.stock < 1}
+            >
+              −
+            </button>
+
+            <span className="mx-2">{prod.stock}</span>
+
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => handleIncrease(prod.id)}
+            >
+              +
+            </button>
             <button className="btn btn-sm btn-outline-danger" onClick={() => handleEliminar(prod.id)}>
               <i className="fas fa-trash"></i>
             </button>
@@ -138,7 +179,8 @@ function Dashboard() {
                 <textarea name="description" className="form-control mb-2" placeholder="Descripción" value={nuevoProducto.description} onChange={handleChange}></textarea>
                 <input name="brand" className="form-control mb-2" placeholder="Marca" value={nuevoProducto.brand} onChange={handleChange} />
                 <input name="images" className="form-control mb-2" placeholder="URLs de imágenes separadas por coma" value={nuevoProducto.images} onChange={handleChange} />
-                
+                <input type="number" name="stock" className="form-control mb-2" placeholder="Stock disponible" value={nuevoProducto.stock} onChange={handleChange} />
+
                 <hr />
                 <h6>Categorías existentes</h6>
                 <div className='overflow-auto' style={{ maxHeight: '145px' }}>

@@ -44,13 +44,22 @@ function Home() {
       <div id="mainCarousel" className="carousel slide my-4" data-bs-ride="carousel">
         <div className="carousel-inner rounded">
           <div className="carousel-item active">
-            <img src="https://placehold.co/800x300?text=Imagen+1" className="d-block w-100" alt="Slide 1" />
+            <img 
+              src="https://b2ctrendy.vtexassets.com/assets/vtex.file-manager-graphql/images/3781bcc0-bfa0-45f2-b3f1-1e8a1d22898e___a6609dc999c69004d4a9ff959af0b896.jpg"
+              style={{ height: "486px", objectFit: "contain" }}
+              className="d-block w-100" alt="Slide 1" />
           </div>
           <div className="carousel-item">
-            <img src="https://placehold.co/800x300?text=Imagen+2" className="d-block w-100" alt="Slide 2" />
+            <img 
+              src="https://promociones-aereas.com.ar/wp-content/uploads/2019/04/01_FRIDAY.jpg "
+              style={{ height: "486px", objectFit: "contain" }}
+              className="d-block w-100" alt="Slide 2" />
           </div>
           <div className="carousel-item">
-            <img src="https://placehold.co/800x300?text=Imagen+3" className="d-block w-100" alt="Slide 3" />
+            <img 
+              src="https://netivooregon.s3.amazonaws.com/modatexrosa2/img/logo/cyber-week-cms.gif"
+              style={{ height: "486px", objectFit: "contain" }}
+              className="d-block w-100" alt="Slide 3" />
           </div>
         </div>
         <button className="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">

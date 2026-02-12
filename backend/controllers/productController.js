@@ -49,7 +49,7 @@ const getMyProducts = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  const { name, price, description, brand, categories, newCategories, images } = req.body;
+  const { name, price, stock, description, brand, categories, newCategories, images } = req.body;
   const userId = req.user.id;
 
   const conn = await pool.getConnection();
@@ -58,8 +58,8 @@ const createProduct = async (req, res) => {
 
     // Insertar producto
     const [result] = await conn.query(
-      'INSERT INTO products (name, price, description, brand, images, owner_id) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, price, description, brand, JSON.stringify(images), userId]
+      'INSERT INTO products (name, price, stock, description, brand, images, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, price, stock, description, brand, JSON.stringify(images), userId]
     );
     const productId = result.insertId;
 
@@ -92,7 +92,7 @@ const createProduct = async (req, res) => {
 
     await conn.commit();
 
-    res.status(201).json({ id: productId, name, price, description, brand, images });
+    res.status(201).json({ id: productId, name, price, stock, description, brand, images });
   } catch (err) {
     await conn.rollback();
     console.error(err);
@@ -122,25 +122,97 @@ const deleteProduct = async (req, res) => {
 };
 
 const searchProducts = async (req, res) => {
-  const { query } = req.params;
+  const { query } = req.params;                 // término de búsqueda principal
+  const { minPrice, maxPrice, brand, type, sort } = req.query; // filtros opcionales
+
+  let sql = `
+    SELECT p.*
+    FROM products p
+    WHERE (
+      LOWER(p.name)  LIKE LOWER(?)
+      OR LOWER(p.brand) LIKE LOWER(?)
+      OR EXISTS (
+        SELECT 1
+        FROM product_categories pc
+        JOIN categories c ON c.id = pc.category_id
+        WHERE pc.product_id = p.id
+          AND LOWER(c.name) LIKE LOWER(?)
+      )
+    )
+  `;
+  const params = [`%${query}%`, `%${query}%`, `%${query}%`];
+
+  if (minPrice) { sql += ` AND p.price >= ?`; params.push(Number(minPrice)); }
+  if (maxPrice) { sql += ` AND p.price <= ?`; params.push(Number(maxPrice)); }
+  if (brand)    { sql += ` AND LOWER(p.brand) = LOWER(?)`; params.push(brand.trim()); }
+
+  // Filtro por tipo/categoría (independiente del OR anterior)
+  if (type) {
+    sql += `
+      AND EXISTS (
+        SELECT 1
+        FROM product_categories pc2
+        JOIN categories c2 ON c2.id = pc2.category_id
+        WHERE pc2.product_id = p.id
+          AND LOWER(c2.name) = LOWER(?)
+      )
+    `;
+    params.push(type.trim());
+  }
+
+  // Orden
+  if (sort === 'price_asc'){
+    sql += ` ORDER BY p.price ASC`;
+  }
+  else {
+    sql += ` ORDER BY p.id DESC`;
+  }
 
   try {
-    const [rows] = await pool.query(
-      `SELECT DISTINCT p.*
-       FROM products p
-       LEFT JOIN product_categories pc ON p.id = pc.product_id
-       LEFT JOIN categories c ON pc.category_id = c.id
-       WHERE p.name LIKE ? 
-          OR p.brand LIKE ?
-          OR c.name LIKE ?`,
-      [`%${query}%`, `%${query}%`, `%${query}%`]
-    );
+    const [rows] = await pool.query(sql, params);
     res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error en la búsqueda" });
+    console.error('Search error:', err);
+    res.status(500).json({ error: 'Error en la búsqueda' });
   }
 };
+
+const increaseStockProduct = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const [result] = await pool.query('UPDATE products SET stock = stock + 1 WHERE id = ? AND owner_id = ?', [id, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado o no autorizado' });
+    }
+
+    res.json({ success: true });
+  }catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al aumentar stock' });
+  }
+}
+
+const decreaseStockProduct = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const [result] = await pool.query('UPDATE products SET stock = stock - 1 WHERE id = ? AND owner_id = ?', [id, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado o no autorizado' });
+    }
+
+    res.json({ success: true });
+  }catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al decrementar stock' });
+  }
+}
+
 
 module.exports = {
   getProducts,
@@ -148,5 +220,7 @@ module.exports = {
   getMyProducts,
   createProduct,
   deleteProduct,
-  searchProducts
+  searchProducts,
+  increaseStockProduct,
+  decreaseStockProduct
 };
