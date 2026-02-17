@@ -9,6 +9,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import PrivateRoute from './components/PrivateRoute';
 import SearchResults from './pages/SearchResults';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/search/:query" element={<SearchResults />} />
         <Route

@@ -5,6 +5,7 @@ function Dashboard() {
   const [productos, setProductos] = useState([]);
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [orders, setOrders] = useState([]);
 
   const [nuevoProducto, setNuevoProducto] = useState({
     name: '',
@@ -39,6 +40,17 @@ function Dashboard() {
       .then(res => setCategories(res.data))
       .catch(err => console.error('Error al cargar categorías', err));
   }, []);
+
+  useEffect(() => {
+    axios.get('/api/orders/mine', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    .then(res => setOrders(res.data))
+    .catch(err => console.error('Error al cargar órdenes', err));
+  }, []);
+
 
   const handleChange = (e) => {
     setNuevoProducto({
@@ -214,6 +226,51 @@ function Dashboard() {
           </div>
         </div>
       )}
+
+      <hr className="my-5" />
+      <h2>Historial de Compras</h2>
+
+      {orders.length === 0 && <p>No tienes compras todavía.</p>}
+
+      {orders.map(order => (
+        <div key={order.id} className="card mb-3 p-3">
+
+          <div className="d-flex justify-content-between">
+            <strong>Orden #{order.id}</strong>
+            <span>${order.total}</span>
+          </div>
+
+          <small className="text-muted">
+            {new Date(order.created_at).toLocaleString()}
+          </small>
+
+          <div className="mt-2">
+            {order.items.map(item => (
+              <div key={item.id} className="d-flex align-items-center gap-2">
+
+                {item.images?.[0] && (
+                  <img
+                    src={item.images[0]}
+                    alt={item.name}
+                    style={{
+                      width: '50px',
+                      height: '50px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                )}
+
+                <div>
+                  {item.name} x{item.quantity}
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+        </div>
+      ))}
+
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useCart } from "../context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Cart() {
+  const navigate = useNavigate();
   const { cart, removeFromCart, clearCart, increaseQuantity, decreaseQuantity } = useCart();
 
   const total = cart.reduce((sum, p) => sum + p.price * p.quantity, 0);
@@ -72,7 +73,9 @@ function Cart() {
           <button className="btn btn-outline-danger" onClick={clearCart}>
             Vaciar carrito
           </button>
-          <button className="btn btn-success">Finalizar compra</button>
+          <button className="btn btn-success" onClick={() => navigate("/checkout")}>
+            Finalizar compra
+          </button>
         </div>
       </div>
     </div>

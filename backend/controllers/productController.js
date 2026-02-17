@@ -197,13 +197,13 @@ const increaseStockProduct = async (req, res) => {
 
 const decreaseStockProduct = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const { quantity } = req.body;
 
   try {
-    const [result] = await pool.query('UPDATE products SET stock = stock - 1 WHERE id = ? AND owner_id = ?', [id, userId]);
+    const [result] = await pool.query('UPDATE products SET stock = stock - ? WHERE id = ? AND stock > 0', [quantity, id]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Producto no encontrado o no autorizado' });
+      return res.status(400).json({ error: 'Sin stock disponible' });
     }
 
     res.json({ success: true });
