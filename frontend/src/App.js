@@ -10,29 +10,33 @@ import PrivateRoute from './components/PrivateRoute';
 import SearchResults from './pages/SearchResults';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import Favorites from './pages/Favorites';
+import { ProductProvider } from './context/ProductContext';
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/products/:id" element={<ProductDetailPage />} />
-        <Route path="/search/:query" element={<SearchResults />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <ProductProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/search/:query" element={<SearchResults />} />
+          <Route path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </ProductProvider>
   );
 }
 

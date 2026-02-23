@@ -18,6 +18,11 @@ function Navbar() {
       <div className="collapse navbar-collapse">
         <ul className="navbar-nav gap-2 ms-auto align-items-center">
           <li className="nav-item">
+            <Link to="/favorites" className="btn btn-outline-light ms-2">
+              ❤️
+            </Link>
+          </li>
+          <li className="nav-item">
             <Link className="nav-link position-relative" to="/cart">
               🛒
               {cart.length > 0 && (

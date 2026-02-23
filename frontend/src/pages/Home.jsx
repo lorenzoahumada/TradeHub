@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { useProducts } from '../store/useProductStore';
+import { useProducts } from '../context/ProductContext';
 
 function Home() {
   const [producto, setProducto] = useState('');

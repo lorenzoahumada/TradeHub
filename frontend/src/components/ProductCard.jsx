@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
+import { useProducts } from '../context/ProductContext';
 
 function ProductCard({ product, width = '370px', height = '300px' }) {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { toggleFavorite, favoriteIds } = useProducts();
 
   const handleClick = () => {
     navigate(`/products/${product.id}`);
@@ -13,7 +15,20 @@ function ProductCard({ product, width = '370px', height = '300px' }) {
     <div className="card" style={{ width }}>
       <div className="card-body">
         {product.owner_name && <p className="text-muted">{product.owner_name}</p>}
-        <h5 className="card-title mb-3">{product.name}</h5>
+        <button
+          className="btn btn-light position-absolute top-0 end-0 m-2"
+          onClick={() => toggleFavorite(product.id)}
+        >
+          {favoriteIds.includes(product.id) ? '❤️' : '🤍'}
+        </button>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h5 className="card-title">{product.name}</h5>
+          {product.stock === 0 && (
+            <span className="badge bg-danger">
+              Agotado
+            </span>
+          )}
+        </div>
         <div 
           className="mb-3 d-flex justify-content-center align-items-center border border-dark"
           style={{ height, overflow: 'hidden' }}
@@ -27,11 +42,6 @@ function ProductCard({ product, width = '370px', height = '300px' }) {
             />
           ) : (
             <span className="text-muted">Sin imagen</span>
-          )}
-          {product.stock === 0 && (
-            <span className="badge bg-danger position-absolute top-0 end-0 m-2">
-              Agotado
-            </span>
           )}
         </div>
         <p className="card-text h4">$ {product.price}</p>
