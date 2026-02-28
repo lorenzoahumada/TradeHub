@@ -13,21 +13,21 @@ export function CartProvider({ children }) {
   }, [cart]);
 
   const addToCart = (product) => {
+    const amountToAdd = product.quantity || 1;
     setCart((prev) => {
       const existing = prev.find((p) => p.id === product.id);
-
       if (existing) {
-        if (existing.quantity < product.stock) {
-          return prev.map(p =>
-            p.id === product.id
-              ? { ...p, quantity: p.quantity + 1 }
-              : p
-          );
-        }
-        return prev; // no supera stock
-      }
+        const newQuantity = existing.quantity + amountToAdd;
 
-      return [...prev, { ...product, quantity: 1 }];
+        if (newQuantity > product.stock) return prev;
+
+        return prev.map(p =>
+          p.id === product.id
+            ? { ...p, quantity: newQuantity }
+            : p
+        );
+      }
+      return [ ...prev, {...product, quantity: Math.min(amountToAdd, product.stock)}];
     });
   };
 

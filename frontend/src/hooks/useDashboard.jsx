@@ -11,6 +11,7 @@ export default function useDashboard() {
 
   const [nuevoProducto, setNuevoProducto] = useState({
     name: '',
+    type: '',
     description: '',
     price: '',
     stock: '',
@@ -26,8 +27,6 @@ export default function useDashboard() {
     delivered: 'success',
     cancelled: 'danger'
   };
-
-  const token = localStorage.getItem('token');
 
   // -------- LOAD DATA --------
 
@@ -113,7 +112,7 @@ export default function useDashboard() {
     .then(res => {
       setProductos([...productos, res.data]);
       setShowModal(false);
-      setNuevoProducto({ name: '', description: '', price: '', images: '', categories: [], newCategories: [], brand: '' });
+      setNuevoProducto({ name: '', type: '', description: '', price: '', images: '', categories: [], newCategories: [], brand: '' });
     })
     .catch(err => console.error('Error al agregar producto', err));
   };

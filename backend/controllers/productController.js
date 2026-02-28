@@ -30,7 +30,13 @@ const getProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
+    const [rows] = await pool.query(`
+      SELECT products.*, users.name AS owner_name 
+      FROM products 
+      JOIN users ON products.owner_id = users.id 
+      WHERE products.id = ?`,
+      [req.params.id]
+    );
     if (rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
     
     const product = rows[0];
@@ -49,7 +55,7 @@ const getMyProducts = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  const { name, price, stock, description, brand, categories, newCategories, images } = req.body;
+  const { name, type, price, stock, description, brand, categories, newCategories, images } = req.body;
   const userId = req.user.id;
 
   const conn = await pool.getConnection();
@@ -58,8 +64,8 @@ const createProduct = async (req, res) => {
 
     // Insertar producto
     const [result] = await conn.query(
-      'INSERT INTO products (name, price, stock, description, brand, images, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [name, price, stock, description, brand, JSON.stringify(images), userId]
+      'INSERT INTO products (name, type, price, stock, description, brand, images, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [name, type, price, stock, description, brand, JSON.stringify(images), userId]
     );
     const productId = result.insertId;
 
@@ -92,7 +98,7 @@ const createProduct = async (req, res) => {
 
     await conn.commit();
 
-    res.status(201).json({ id: productId, name, price, stock, description, brand, images });
+    res.status(201).json({ id: productId, name, type, price, stock, description, brand, images });
   } catch (err) {
     await conn.rollback();
     console.error(err);
@@ -177,6 +183,48 @@ const searchProducts = async (req, res) => {
   }
 };
 
+const getRelatedProducts = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [[product]] = await pool.query(
+      'SELECT * FROM products WHERE id = ?',
+      [id]
+    );
+
+    if (!product) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    const [sameType] = await pool.query(
+      `SELECT * FROM products
+       WHERE type = ? AND id != ?
+       LIMIT 4`,
+      [product.type, id]
+    );
+
+    let related = [...sameType];
+    if (related.length < 4) {
+
+      const remaining = 4 - related.length;
+
+      const [sameBrand] = await pool.query(
+        `SELECT * FROM products
+         WHERE brand = ?
+         AND id != ?
+         AND id NOT IN (${related.map(p => p.id).join(',') || 0})
+         LIMIT ?`,
+        [product.brand, id, remaining]
+      );
+      related = [...related, ...sameBrand];
+    }
+    res.json(related);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al obtener relacionados' });
+  }
+};
+
 const increaseStockProduct = async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
@@ -221,6 +269,7 @@ module.exports = {
   createProduct,
   deleteProduct,
   searchProducts,
+  getRelatedProducts,
   increaseStockProduct,
   decreaseStockProduct
 };

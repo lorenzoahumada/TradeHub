@@ -29,6 +29,13 @@ export default function ProductModal({
               onChange={onChange}
             />
 
+            <input name="type" 
+              className="form-control mb-2"
+              placeholder="Tipo (ej: Smartphone)"
+              value={nuevoProducto.type}
+              onChange={onChange}
+            />
+
             <input name="price" type="number"
               className="form-control mb-2"
               placeholder="Precio"
